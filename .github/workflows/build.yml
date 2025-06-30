@@ -1,0 +1,429 @@
+name: Build mbw Static Binaries
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          # Linux builds - 主要架构
+          - os: ubuntu-latest
+            target: linux-amd64
+            goos: linux
+            goarch: amd64
+            cc: gcc
+            cflags: "-O2 -march=x86-64 -mtune=generic -static"
+          - os: ubuntu-latest
+            target: linux-386
+            goos: linux
+            goarch: 386
+            cc: gcc
+            cflags: "-m32 -static"
+            packages: "gcc-multilib"
+          - os: ubuntu-latest
+            target: linux-arm64
+            goos: linux
+            goarch: arm64
+            cc: aarch64-linux-gnu-gcc
+            cflags: "-static"
+            packages: "gcc-aarch64-linux-gnu"
+            strip: aarch64-linux-gnu-strip
+          - os: ubuntu-latest
+            target: linux-armv7
+            goos: linux
+            goarch: arm
+            goarm: 7
+            cc: arm-linux-gnueabihf-gcc
+            cflags: "-static"
+            packages: "gcc-arm-linux-gnueabihf"
+            strip: arm-linux-gnueabihf-strip
+          - os: ubuntu-latest
+            target: linux-armv6
+            goos: linux
+            goarch: arm
+            goarm: 6
+            cc: arm-linux-gnueabihf-gcc
+            cflags: "-static -march=armv6"
+            packages: "gcc-arm-linux-gnueabihf"
+            strip: arm-linux-gnueabihf-strip
+            
+          # Linux builds - 特殊架构
+          - os: ubuntu-latest
+            target: linux-riscv64
+            goos: linux
+            goarch: riscv64
+            cc: riscv64-linux-gnu-gcc
+            cflags: "-static"
+            packages: "gcc-riscv64-linux-gnu"
+            strip: riscv64-linux-gnu-strip
+          - os: ubuntu-latest
+            target: linux-mips64
+            goos: linux
+            goarch: mips64
+            cc: mips64-linux-gnuabi64-gcc
+            cflags: "-static"
+            packages: "gcc-mips64-linux-gnuabi64"
+            strip: mips64-linux-gnuabi64-strip
+          - os: ubuntu-latest
+            target: linux-mips64le
+            goos: linux
+            goarch: mips64le
+            cc: mips64el-linux-gnuabi64-gcc
+            cflags: "-static"
+            packages: "gcc-mips64el-linux-gnuabi64"
+            strip: mips64el-linux-gnuabi64-strip
+          - os: ubuntu-latest
+            target: linux-mips
+            goos: linux
+            goarch: mips
+            cc: mips-linux-gnu-gcc
+            cflags: "-static"
+            packages: "gcc-mips-linux-gnu"
+            strip: mips-linux-gnu-strip
+          - os: ubuntu-latest
+            target: linux-mipsle
+            goos: linux
+            goarch: mipsle
+            cc: mipsel-linux-gnu-gcc
+            cflags: "-static"
+            packages: "gcc-mipsel-linux-gnu"
+            strip: mipsel-linux-gnu-strip
+          - os: ubuntu-latest
+            target: linux-ppc64
+            goos: linux
+            goarch: ppc64
+            cc: powerpc64-linux-gnu-gcc
+            cflags: "-static"
+            packages: "gcc-powerpc64-linux-gnu"
+            strip: powerpc64-linux-gnu-strip
+          - os: ubuntu-latest
+            target: linux-ppc64le
+            goos: linux
+            goarch: ppc64le
+            cc: powerpc64le-linux-gnu-gcc
+            cflags: "-static"
+            packages: "gcc-powerpc64le-linux-gnu"
+            strip: powerpc64le-linux-gnu-strip
+            
+          # macOS builds
+          - os: macos-latest
+            target: darwin-amd64
+            goos: darwin
+            goarch: amd64
+            cc: clang
+            cflags: "-O2 -arch x86_64"
+          - os: macos-latest
+            target: darwin-arm64
+            goos: darwin
+            goarch: arm64
+            cc: clang
+            cflags: "-O2 -arch arm64"
+          
+          # FreeBSD builds
+          - os: ubuntu-latest
+            target: freebsd-amd64
+            goos: freebsd
+            goarch: amd64
+            cc: clang
+            cflags: "-target x86_64-unknown-freebsd -static"
+            packages: "clang lld"
+          - os: ubuntu-latest
+            target: freebsd-arm64
+            goos: freebsd
+            goarch: arm64
+            cc: clang
+            cflags: "-target aarch64-unknown-freebsd -static"
+            packages: "clang lld"
+
+          # OpenBSD builds
+          - os: ubuntu-latest
+            target: openbsd-amd64
+            goos: openbsd
+            goarch: amd64
+            cc: clang
+            cflags: "-target x86_64-unknown-openbsd -static"
+            packages: "clang lld"
+          - os: ubuntu-latest
+            target: openbsd-arm64
+            goos: openbsd
+            goarch: arm64
+            cc: clang
+            cflags: "-target aarch64-unknown-openbsd -static"
+            packages: "clang lld"
+            
+          # NetBSD builds
+          - os: ubuntu-latest
+            target: netbsd-amd64
+            goos: netbsd
+            goarch: amd64
+            cc: clang
+            cflags: "-target x86_64-unknown-netbsd -static"
+            packages: "clang lld"
+            
+      fail-fast: false  # 确保即使某个任务失败，其他任务仍然继续
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@v4
+
+      - name: Checkout mbw source
+        uses: actions/checkout@v4
+        with:
+          repository: raas/mbw
+          path: mbw-src
+
+      - name: Create bin directory
+        run: mkdir -p bin
+
+      - name: Setup build environment (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential
+          if [[ -n "${{ matrix.packages }}" ]]; then
+            sudo apt-get install -y ${{ matrix.packages }}
+          fi
+
+      - name: Setup build environment (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          # macOS 通常已经安装了必要的工具
+          xcode-select --install || true
+
+      - name: Build mbw static binary
+        run: |
+          cd mbw-src
+          
+          # 设置编译器和标志
+          export CC="${{ matrix.cc }}"
+          export CFLAGS="${{ matrix.cflags }}"
+          
+          # 编译 mbw
+          echo "Building mbw with CC=$CC and CFLAGS=$CFLAGS"
+          make clean || true
+          make CC="$CC" CFLAGS="$CFLAGS"
+          
+          # 设置输出文件名
+          if [[ -n "${{ matrix.goarm }}" ]]; then
+            OUTPUT_NAME="mbw-${{ matrix.goos }}-${{ matrix.goarch }}v${{ matrix.goarm }}"
+          else
+            OUTPUT_NAME="mbw-${{ matrix.goos }}-${{ matrix.goarch }}"
+          fi
+          
+          # 复制二进制文件
+          cp mbw "../bin/$OUTPUT_NAME"
+          
+          # Strip 二进制文件（如果有指定的 strip 工具）
+          if [[ -n "${{ matrix.strip }}" ]]; then
+            ${{ matrix.strip }} "../bin/$OUTPUT_NAME" || true
+          elif [[ "${{ runner.os }}" == "Linux" && "${{ matrix.target }}" == "linux-amd64" ]]; then
+            strip "../bin/$OUTPUT_NAME" || true
+          elif [[ "${{ runner.os }}" == "macOS" ]]; then
+            strip "../bin/$OUTPUT_NAME" || true
+          fi
+          
+          # 显示文件信息
+          ls -lah "../bin/$OUTPUT_NAME"
+          file "../bin/$OUTPUT_NAME" || true
+          
+          # 测试二进制文件（仅在本地架构上）
+          if [[ "${{ matrix.target }}" == "linux-amd64" && "${{ runner.os }}" == "Linux" ]] || [[ "${{ runner.os }}" == "macOS" ]]; then
+            echo "Testing binary..."
+            "../bin/$OUTPUT_NAME" --version || "../bin/$OUTPUT_NAME" -h || true
+          fi
+        continue-on-error: true
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mbw-${{ matrix.target }}
+          path: bin/mbw-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goarm && 'v' }}${{ matrix.goarm }}
+          retention-days: 30
+        continue-on-error: true
+
+  collect:
+    needs: build
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Checkout mbw source
+        uses: actions/checkout@v4
+        with:
+          repository: raas/mbw
+          path: mbw-src
+          
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+          
+      - name: Organize binaries
+        run: |
+          # 创建 bin 目录
+          mkdir -p bin/
+          
+          # 从所有构建工件中复制文件到 bin 目录
+          find artifacts/ -type f -name "mbw-*" -exec cp {} bin/ \;
+          
+          # 给所有二进制文件添加执行权限
+          chmod +x bin/mbw-* 2>/dev/null || true
+          
+          # 创建 README 文件
+          cat > bin/README.md << 'EOF'
+          # mbw Static Binaries
+          
+          This directory contains statically compiled binaries of [mbw](https://github.com/raas/mbw) for various platforms and architectures.
+          
+          ## About mbw
+          
+          mbw is a memory bandwidth benchmark tool that measures the bandwidth of memory subsystems.
+          
+          ## Available Binaries
+          
+          ### Linux
+          - `mbw-linux-amd64` - Linux x86_64
+          - `mbw-linux-386` - Linux x86 (32-bit)
+          - `mbw-linux-arm64` - Linux ARM64
+          - `mbw-linux-armv7` - Linux ARMv7
+          - `mbw-linux-armv6` - Linux ARMv6
+          - `mbw-linux-riscv64` - Linux RISC-V 64-bit
+          - `mbw-linux-mips64` - Linux MIPS64 (big-endian)
+          - `mbw-linux-mips64le` - Linux MIPS64 (little-endian)
+          - `mbw-linux-mips` - Linux MIPS (big-endian)
+          - `mbw-linux-mipsle` - Linux MIPS (little-endian)
+          - `mbw-linux-ppc64` - Linux PowerPC64 (big-endian)
+          - `mbw-linux-ppc64le` - Linux PowerPC64 (little-endian)
+          
+          ### macOS
+          - `mbw-darwin-amd64` - macOS x86_64
+          - `mbw-darwin-arm64` - macOS ARM64 (Apple Silicon)
+          
+          ### BSD
+          - `mbw-freebsd-amd64` - FreeBSD x86_64
+          - `mbw-freebsd-arm64` - FreeBSD ARM64
+          - `mbw-openbsd-amd64` - OpenBSD x86_64
+          - `mbw-openbsd-arm64` - OpenBSD ARM64
+          - `mbw-netbsd-amd64` - NetBSD x86_64
+          
+          ## Usage
+          
+          Download the appropriate binary for your platform and run it:
+          
+          ```bash
+          # Make executable (if needed)
+          chmod +x mbw-linux-amd64
+          
+          # Run memory bandwidth test
+          ./mbw-linux-amd64 256
+          ```
+          
+          ## Build Information
+          
+          These binaries are automatically built using GitHub Actions from the [mbw source repository](https://github.com/raas/mbw).
+          All Linux binaries are statically linked for maximum compatibility.
+          
+          Source: https://github.com/raas/mbw
+          Built in: ${{ github.repository }}
+          
+          EOF
+          
+          # 列出所有收集到的二进制文件
+          echo "Successfully built binaries:"
+          ls -la bin/
+          
+          # 创建校验和文件
+          cd bin
+          sha256sum mbw-* > SHA256SUMS 2>/dev/null || true
+          cd ..
+          
+      - name: Upload combined bin directory
+        uses: actions/upload-artifact@v4
+        with:
+          name: mbw-all-binaries
+          path: |
+            bin/
+            !bin/.gitkeep
+          retention-days: 90
+          
+      - name: Commit binaries to current repository
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+          
+          # 添加所有二进制文件
+          git add bin/
+          
+          # 检查是否有变化
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: Update mbw static binaries [skip ci]
+            
+            - Built from mbw source: https://github.com/raas/mbw
+            - Built on: $(date -u +'%Y-%m-%d %H:%M:%S UTC')
+            - Workflow: ${{ github.workflow }}
+            - Run: ${{ github.run_number }}
+            - Repository: ${{ github.repository }}"
+            
+            git push
+          fi
+        continue-on-error: true
+
+  create-release:
+    needs: [build, collect]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Download all binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: mbw-all-binaries
+          path: release-binaries/
+          
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}-${{ github.sha }}
+          release_name: mbw Static Binaries v${{ github.run_number }}
+          body: |
+            Automatically built static binaries of mbw for multiple platforms and architectures.
+            
+            Built from commit: ${{ github.sha }}
+            Built on: ${{ github.run_date }}
+            
+            ## Available Binaries
+            
+            See the attached files for binaries compatible with your platform.
+            All Linux binaries are statically linked for maximum compatibility.
+            
+            ## Usage
+            
+            Download the appropriate binary for your platform, make it executable, and run:
+            
+            ```bash
+            chmod +x mbw-linux-amd64
+            ./mbw-linux-amd64 256
+            ```
+          draft: false
+          prerelease: false
+        continue-on-error: true
