@@ -125,46 +125,46 @@ jobs:
             cc: clang
             cflags: "-O2 -arch arm64"
           
-          # FreeBSD builds
-          - os: ubuntu-latest
-            target: freebsd-amd64
-            goos: freebsd
-            goarch: amd64
-            cc: clang
-            cflags: "-target x86_64-unknown-freebsd -static"
-            packages: "clang lld"
-          - os: ubuntu-latest
-            target: freebsd-arm64
-            goos: freebsd
-            goarch: arm64
-            cc: clang
-            cflags: "-target aarch64-unknown-freebsd -static"
-            packages: "clang lld"
+          # # FreeBSD builds
+          # - os: ubuntu-latest
+          #   target: freebsd-amd64
+          #   goos: freebsd
+          #   goarch: amd64
+          #   cc: clang
+          #   cflags: "-target x86_64-unknown-freebsd -static"
+          #   packages: "clang lld"
+          # - os: ubuntu-latest
+          #   target: freebsd-arm64
+          #   goos: freebsd
+          #   goarch: arm64
+          #   cc: clang
+          #   cflags: "-target aarch64-unknown-freebsd -static"
+          #   packages: "clang lld"
 
-          # OpenBSD builds
-          - os: ubuntu-latest
-            target: openbsd-amd64
-            goos: openbsd
-            goarch: amd64
-            cc: clang
-            cflags: "-target x86_64-unknown-openbsd -static"
-            packages: "clang lld"
-          - os: ubuntu-latest
-            target: openbsd-arm64
-            goos: openbsd
-            goarch: arm64
-            cc: clang
-            cflags: "-target aarch64-unknown-openbsd -static"
-            packages: "clang lld"
+          # # OpenBSD builds
+          # - os: ubuntu-latest
+          #   target: openbsd-amd64
+          #   goos: openbsd
+          #   goarch: amd64
+          #   cc: clang
+          #   cflags: "-target x86_64-unknown-openbsd -static"
+          #   packages: "clang lld"
+          # - os: ubuntu-latest
+          #   target: openbsd-arm64
+          #   goos: openbsd
+          #   goarch: arm64
+          #   cc: clang
+          #   cflags: "-target aarch64-unknown-openbsd -static"
+          #   packages: "clang lld"
             
-          # NetBSD builds
-          - os: ubuntu-latest
-            target: netbsd-amd64
-            goos: netbsd
-            goarch: amd64
-            cc: clang
-            cflags: "-target x86_64-unknown-netbsd -static"
-            packages: "clang lld"
+          # # NetBSD builds
+          # - os: ubuntu-latest
+          #   target: netbsd-amd64
+          #   goos: netbsd
+          #   goarch: amd64
+          #   cc: clang
+          #   cflags: "-target x86_64-unknown-netbsd -static"
+          #   packages: "clang lld"
             
       fail-fast: false  # 确保即使某个任务失败，其他任务仍然继续
 
