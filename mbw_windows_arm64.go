@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 )
 
-//go:embed bin/mbw-windows-arm64.exe
+//go:embed bin/mbw-windows-amd64.exe
 var binFiles embed.FS
 
 // GetMBW 获取与当前系统匹配的 mbw 二进制文件并返回路径
