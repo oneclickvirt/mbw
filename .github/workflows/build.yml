@@ -14,20 +14,26 @@ jobs:
             goos: linux
             goarch: amd64
             cc: gcc
-            cflags: "-O2 -march=x86-64 -mtune=generic -static"
+            cflags: "-O2 -static -fno-stack-protector -Wl,--gc-sections"
+          - os: ubuntu-latest
+            target: linux-amd64-compat
+            goos: linux
+            goarch: amd64
+            cc: gcc
+            cflags: "-O1 -march=x86-64 -mtune=generic -static -fno-stack-protector -mno-sse4.2 -mno-avx -mno-avx2"
           - os: ubuntu-latest
             target: linux-386
             goos: linux
             goarch: 386
             cc: gcc
-            cflags: "-m32 -static"
+            cflags: "-m32 -static -O1 -march=i686 -mtune=generic -fno-stack-protector"
             packages: "gcc-multilib"
           - os: ubuntu-latest
             target: linux-arm64
             goos: linux
             goarch: arm64
             cc: aarch64-linux-gnu-gcc
-            cflags: "-static"
+            cflags: "-static -O1 -fno-stack-protector"
             packages: "gcc-aarch64-linux-gnu"
             strip: aarch64-linux-gnu-strip
           - os: ubuntu-latest
@@ -36,7 +42,7 @@ jobs:
             goarch: arm
             goarm: 7
             cc: arm-linux-gnueabihf-gcc
-            cflags: "-static"
+            cflags: "-static -O1 -march=armv7-a -mfpu=vfpv3-d16 -fno-stack-protector"
             packages: "gcc-arm-linux-gnueabihf"
             strip: arm-linux-gnueabihf-strip
           - os: ubuntu-latest
@@ -45,7 +51,7 @@ jobs:
             goarch: arm
             goarm: 6
             cc: arm-linux-gnueabihf-gcc
-            cflags: "-static -march=armv6"
+            cflags: "-static -O1 -march=armv6 -mfpu=vfp -fno-stack-protector"
             packages: "gcc-arm-linux-gnueabihf"
             strip: arm-linux-gnueabihf-strip
             
@@ -55,7 +61,7 @@ jobs:
             goos: linux
             goarch: riscv64
             cc: riscv64-linux-gnu-gcc
-            cflags: "-static"
+            cflags: "-static -O1 -fno-stack-protector"
             packages: "gcc-riscv64-linux-gnu"
             strip: riscv64-linux-gnu-strip
           - os: ubuntu-latest
@@ -63,7 +69,7 @@ jobs:
             goos: linux
             goarch: mips64
             cc: mips64-linux-gnuabi64-gcc
-            cflags: "-static"
+            cflags: "-static -O1 -fno-stack-protector"
             packages: "gcc-mips64-linux-gnuabi64"
             strip: mips64-linux-gnuabi64-strip
           - os: ubuntu-latest
@@ -71,7 +77,7 @@ jobs:
             goos: linux
             goarch: mips64le
             cc: mips64el-linux-gnuabi64-gcc
-            cflags: "-static"
+            cflags: "-static -O1 -fno-stack-protector"
             packages: "gcc-mips64el-linux-gnuabi64"
             strip: mips64el-linux-gnuabi64-strip
           - os: ubuntu-latest
@@ -79,7 +85,7 @@ jobs:
             goos: linux
             goarch: mips
             cc: mips-linux-gnu-gcc
-            cflags: "-static"
+            cflags: "-static -O1 -fno-stack-protector"
             packages: "gcc-mips-linux-gnu"
             strip: mips-linux-gnu-strip
           - os: ubuntu-latest
@@ -87,7 +93,7 @@ jobs:
             goos: linux
             goarch: mipsle
             cc: mipsel-linux-gnu-gcc
-            cflags: "-static"
+            cflags: "-static -O1 -fno-stack-protector"
             packages: "gcc-mipsel-linux-gnu"
             strip: mipsel-linux-gnu-strip
           - os: ubuntu-latest
@@ -95,7 +101,7 @@ jobs:
             goos: linux
             goarch: ppc64
             cc: powerpc64-linux-gnu-gcc
-            cflags: "-static"
+            cflags: "-static -O1 -fno-stack-protector"
             packages: "gcc-powerpc64-linux-gnu"
             strip: powerpc64-linux-gnu-strip
           - os: ubuntu-latest
@@ -103,7 +109,7 @@ jobs:
             goos: linux
             goarch: ppc64le
             cc: powerpc64le-linux-gnu-gcc
-            cflags: "-static"
+            cflags: "-static -O1 -fno-stack-protector"
             packages: "gcc-powerpc64le-linux-gnu"
             strip: powerpc64le-linux-gnu-strip
             
@@ -113,56 +119,85 @@ jobs:
             goos: darwin
             goarch: amd64
             cc: clang
-            cflags: "-O2 -arch x86_64"
+            cflags: "-O2 -arch x86_64 -mmacosx-version-min=10.12"
           - os: macos-latest
             target: darwin-arm64
             goos: darwin
             goarch: arm64
             cc: clang
-            cflags: "-O2 -arch arm64"
-          
-          # # FreeBSD builds
-          # - os: ubuntu-latest
-          #   target: freebsd-amd64
-          #   goos: freebsd
-          #   goarch: amd64
-          #   cc: clang
-          #   cflags: "-target x86_64-unknown-freebsd -static"
-          #   packages: "clang lld"
-          # - os: ubuntu-latest
-          #   target: freebsd-arm64
-          #   goos: freebsd
-          #   goarch: arm64
-          #   cc: clang
-          #   cflags: "-target aarch64-unknown-freebsd -static"
-          #   packages: "clang lld"
+            cflags: "-O2 -arch arm64 -mmacosx-version-min=11.0"
 
-          # # OpenBSD builds
-          # - os: ubuntu-latest
-          #   target: openbsd-amd64
-          #   goos: openbsd
-          #   goarch: amd64
-          #   cc: clang
-          #   cflags: "-target x86_64-unknown-openbsd -static"
-          #   packages: "clang lld"
-          # - os: ubuntu-latest
-          #   target: openbsd-arm64
-          #   goos: openbsd
-          #   goarch: arm64
-          #   cc: clang
-          #   cflags: "-target aarch64-unknown-openbsd -static"
-          #   packages: "clang lld"
+          # Windows builds (使用 mingw-w64)
+          - os: ubuntu-latest
+            target: windows-amd64
+            goos: windows
+            goarch: amd64
+            cc: x86_64-w64-mingw32-gcc
+            cflags: "-O2 -static -static-libgcc -static-libstdc++"
+            packages: "gcc-mingw-w64-x86-64"
+            strip: x86_64-w64-mingw32-strip
+            ext: ".exe"
+          - os: ubuntu-latest
+            target: windows-386
+            goos: windows
+            goarch: 386
+            cc: i686-w64-mingw32-gcc
+            cflags: "-O2 -static -static-libgcc -static-libstdc++"
+            packages: "gcc-mingw-w64-i686"
+            strip: i686-w64-mingw32-strip
+            ext: ".exe"
+          - os: ubuntu-latest
+            target: windows-arm64
+            goos: windows
+            goarch: arm64
+            cc: aarch64-w64-mingw32-gcc
+            cflags: "-O2 -static -static-libgcc -static-libstdc++"
+            packages: "gcc-mingw-w64-aarch64"
+            strip: aarch64-w64-mingw32-strip
+            ext: ".exe"
+          
+          # FreeBSD builds
+          - os: ubuntu-latest
+            target: freebsd-amd64
+            goos: freebsd
+            goarch: amd64
+            cc: clang
+            cflags: "-target x86_64-unknown-freebsd -static"
+            packages: "clang lld"
+          - os: ubuntu-latest
+            target: freebsd-arm64
+            goos: freebsd
+            goarch: arm64
+            cc: clang
+            cflags: "-target aarch64-unknown-freebsd -static"
+            packages: "clang lld"
+
+          # OpenBSD builds
+          - os: ubuntu-latest
+            target: openbsd-amd64
+            goos: openbsd
+            goarch: amd64
+            cc: clang
+            cflags: "-target x86_64-unknown-openbsd -static"
+            packages: "clang lld"
+          - os: ubuntu-latest
+            target: openbsd-arm64
+            goos: openbsd
+            goarch: arm64
+            cc: clang
+            cflags: "-target aarch64-unknown-openbsd -static"
+            packages: "clang lld"
             
-          # # NetBSD builds
-          # - os: ubuntu-latest
-          #   target: netbsd-amd64
-          #   goos: netbsd
-          #   goarch: amd64
-          #   cc: clang
-          #   cflags: "-target x86_64-unknown-netbsd -static"
-          #   packages: "clang lld"
+          # NetBSD builds
+          - os: ubuntu-latest
+            target: netbsd-amd64
+            goos: netbsd
+            goarch: amd64
+            cc: clang
+            cflags: "-target x86_64-unknown-netbsd -static"
+            packages: "clang lld"
             
-      fail-fast: false  # 确保即使某个任务失败，其他任务仍然继续
+      fail-fast: false
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -196,26 +231,41 @@ jobs:
       - name: Build mbw static binary
         run: |
           cd mbw-src
-          
           # 设置编译器和标志
           export CC="${{ matrix.cc }}"
           export CFLAGS="${{ matrix.cflags }}"
-          
+          # 为 Windows 构建设置额外的环境变量
+          if [[ "${{ matrix.goos }}" == "windows" ]]; then
+            export LDFLAGS="-static -static-libgcc -static-libstdc++"
+          fi
           # 编译 mbw
           echo "Building mbw with CC=$CC and CFLAGS=$CFLAGS"
           make clean || true
-          make CC="$CC" CFLAGS="$CFLAGS"
-          
+          # 对于 Windows，可能需要修改 Makefile 或使用不同的构建方法
+          if [[ "${{ matrix.goos }}" == "windows" ]]; then
+            # 检查是否有 Windows 特定的构建方法
+            if [ -f Makefile.win ]; then
+              make -f Makefile.win CC="$CC" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS"
+            else
+              # 使用标准 make，但可能需要调整
+              make CC="$CC" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" || \
+              $CC $CFLAGS mbw.c -o mbw.exe $LDFLAGS
+            fi
+          else
+            make CC="$CC" CFLAGS="$CFLAGS"
+          fi
           # 设置输出文件名
           if [[ -n "${{ matrix.goarm }}" ]]; then
-            OUTPUT_NAME="mbw-${{ matrix.goos }}-${{ matrix.goarch }}v${{ matrix.goarm }}"
+            OUTPUT_NAME="mbw-${{ matrix.goos }}-${{ matrix.goarch }}v${{ matrix.goarm }}${{ matrix.ext }}"
           else
-            OUTPUT_NAME="mbw-${{ matrix.goos }}-${{ matrix.goarch }}"
+            OUTPUT_NAME="mbw-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}"
           fi
-          
           # 复制二进制文件
-          cp mbw "../bin/$OUTPUT_NAME"
-          
+          if [[ "${{ matrix.goos }}" == "windows" ]]; then
+            cp mbw.exe "../bin/$OUTPUT_NAME" || cp mbw "../bin/$OUTPUT_NAME"
+          else
+            cp mbw "../bin/$OUTPUT_NAME"
+          fi
           # Strip 二进制文件（如果有指定的 strip 工具）
           if [[ -n "${{ matrix.strip }}" ]]; then
             ${{ matrix.strip }} "../bin/$OUTPUT_NAME" || true
@@ -224,15 +274,19 @@ jobs:
           elif [[ "${{ runner.os }}" == "macOS" ]]; then
             strip "../bin/$OUTPUT_NAME" || true
           fi
-          
           # 显示文件信息
           ls -lah "../bin/$OUTPUT_NAME"
           file "../bin/$OUTPUT_NAME" || true
-          
           # 测试二进制文件（仅在本地架构上）
           if [[ "${{ matrix.target }}" == "linux-amd64" && "${{ runner.os }}" == "Linux" ]] || [[ "${{ runner.os }}" == "macOS" ]]; then
             echo "Testing binary..."
             "../bin/$OUTPUT_NAME" --version || "../bin/$OUTPUT_NAME" -h || true
+          fi
+          # 对于 Windows 二进制文件，显示依赖信息
+          if [[ "${{ matrix.goos }}" == "windows" && -n "${{ matrix.strip }}" ]]; then
+            echo "Windows binary dependencies:"
+            ${{ matrix.cc }} -print-search-dirs || true
+            objdump -p "../bin/$OUTPUT_NAME" | grep "DLL Name" || true
           fi
         continue-on-error: true
 
@@ -240,7 +294,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mbw-${{ matrix.target }}
-          path: bin/mbw-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goarm && 'v' }}${{ matrix.goarm }}
+          path: bin/mbw-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goarm && 'v' }}${{ matrix.goarm }}${{ matrix.ext }}
           retention-days: 30
         continue-on-error: true
 
@@ -289,7 +343,8 @@ jobs:
           ## Available Binaries
           
           ### Linux
-          - `mbw-linux-amd64` - Linux x86_64
+          - `mbw-linux-amd64` - Linux x86_64 (optimized)
+          - `mbw-linux-amd64-compat` - Linux x86_64 (maximum compatibility, no advanced CPU instructions)
           - `mbw-linux-386` - Linux x86 (32-bit)
           - `mbw-linux-arm64` - Linux ARM64
           - `mbw-linux-armv7` - Linux ARMv7
@@ -303,8 +358,13 @@ jobs:
           - `mbw-linux-ppc64le` - Linux PowerPC64 (little-endian)
           
           ### macOS
-          - `mbw-darwin-amd64` - macOS x86_64
-          - `mbw-darwin-arm64` - macOS ARM64 (Apple Silicon)
+          - `mbw-darwin-amd64` - macOS x86_64 (macOS 10.12+)
+          - `mbw-darwin-arm64` - macOS ARM64 (Apple Silicon, macOS 11.0+)
+          
+          ### Windows
+          - `mbw-windows-amd64.exe` - Windows x86_64
+          - `mbw-windows-386.exe` - Windows x86 (32-bit)
+          - `mbw-windows-arm64.exe` - Windows ARM64
           
           ### BSD
           - `mbw-freebsd-amd64` - FreeBSD x86_64
@@ -313,10 +373,16 @@ jobs:
           - `mbw-openbsd-arm64` - OpenBSD ARM64
           - `mbw-netbsd-amd64` - NetBSD x86_64
           
+          ## Compatibility Notes
+          
+          - **Linux amd64-compat**: Built without SSE4.2, AVX, and AVX2 instructions for maximum compatibility with older CPUs
+          - **Windows binaries**: Statically linked with MinGW-w64, should work on Windows 7+ without additional dependencies
+          - **macOS binaries**: Built with minimum version requirements for broader compatibility
+          - **All Linux binaries**: Statically linked for maximum portability
+          
           ## Usage
           
-          Download the appropriate binary for your platform and run it:
-          
+          ### Linux/macOS/BSD
           ```bash
           # Make executable (if needed)
           chmod +x mbw-linux-amd64
@@ -325,23 +391,24 @@ jobs:
           ./mbw-linux-amd64 256
           ```
           
+          ### Windows
+          ```cmd
+          # Run memory bandwidth test
+          mbw-windows-amd64.exe 256
+          ```
+          
           ## Build Information
           
           These binaries are automatically built using GitHub Actions from the [mbw source repository](https://github.com/raas/mbw).
-          All Linux binaries are statically linked for maximum compatibility.
+          All binaries are optimized for compatibility and performance.
           
           Source: https://github.com/raas/mbw
           Built in: ${{ github.repository }}
-          
           EOF
-          
-          # 列出所有收集到的二进制文件
           echo "Successfully built binaries:"
           ls -la bin/
-          
-          # 创建校验和文件
           cd bin
-          sha256sum mbw-* > SHA256SUMS 2>/dev/null || true
+          sha256sum mbw-* > SHA256SUMS 2>/dev/null || shasum -a 256 mbw-* > SHA256SUMS 2>/dev/null || true
           cd ..
           
       - name: Upload combined bin directory
@@ -358,68 +425,17 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions@github.com"
-          
-          # 添加所有二进制文件
           git add bin/
-          
-          # 检查是否有变化
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
             git commit -m "chore: Update mbw static binaries [skip ci]
-            
             - Built from mbw source: https://github.com/raas/mbw
             - Built on: $(date -u +'%Y-%m-%d %H:%M:%S UTC')
             - Workflow: ${{ github.workflow }}
             - Run: ${{ github.run_number }}
-            - Repository: ${{ github.repository }}"
-            
+            - Repository: ${{ github.repository }}
+            - Includes Windows ARM64/AMD64 and enhanced Linux compatibility builds"
             git push
           fi
-        continue-on-error: true
-
-  create-release:
-    needs: [build, collect]
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-    steps:
-      - name: Checkout current repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Download all binaries
-        uses: actions/download-artifact@v4
-        with:
-          name: mbw-all-binaries
-          path: release-binaries/
-          
-      - name: Create Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ github.run_number }}-${{ github.sha }}
-          release_name: mbw Static Binaries v${{ github.run_number }}
-          body: |
-            Automatically built static binaries of mbw for multiple platforms and architectures.
-            
-            Built from commit: ${{ github.sha }}
-            Built on: ${{ github.run_date }}
-            
-            ## Available Binaries
-            
-            See the attached files for binaries compatible with your platform.
-            All Linux binaries are statically linked for maximum compatibility.
-            
-            ## Usage
-            
-            Download the appropriate binary for your platform, make it executable, and run:
-            
-            ```bash
-            chmod +x mbw-linux-amd64
-            ./mbw-linux-amd64 256
-            ```
-          draft: false
-          prerelease: false
         continue-on-error: true
