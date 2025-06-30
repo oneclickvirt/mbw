@@ -150,7 +150,7 @@ jobs:
             target: windows-arm64
             goos: windows
             goarch: arm64
-            cc: aarch64-w64-mingw32-gcc
+            cc: gcc-aarch64-linux-gnu
             cflags: "-O2 -static -static-libgcc -static-libstdc++"
             packages: "gcc-aarch64-linux-gnu"
             strip: aarch64-w64-mingw32-strip
