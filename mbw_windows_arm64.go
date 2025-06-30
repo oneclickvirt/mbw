@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 )
 
-//go:embed bin/mbw-windows-amd64.exe
+//go:embed bin/mbw-windows-arm64.exe
 var binFiles embed.FS
 
 // GetDD 获取与当前系统匹配的 dd 二进制文件并返回路径

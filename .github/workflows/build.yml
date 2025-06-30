@@ -152,7 +152,7 @@ jobs:
             goarch: arm64
             cc: aarch64-w64-mingw32-gcc
             cflags: "-O2 -static -static-libgcc -static-libstdc++"
-            packages: "gcc-mingw-w64-aarch64"
+            packages: "gcc-aarch64-linux-gnu"
             strip: aarch64-w64-mingw32-strip
             ext: ".exe"
           
