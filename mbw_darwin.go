@@ -12,15 +12,10 @@ import (
 
 func GetMBW() (string, string, error) {
 	if path, err := exec.LookPath("mbw"); err == nil {
-		output, runErr := exec.Command("sudo", path, "-h").CombinedOutput()
-		if strings.Contains(string(output), "Usage: mbw") {
-			return "sudo mbw", "", nil
-		} else {
 			output, runErr = exec.Command(path, "-h").CombinedOutput()
 			if strings.Contains(string(output), "Usage: mbw") {
 				return "mbw", "", nil
 			}
-		}
 	}
 	tempDir, err := os.MkdirTemp("", "mbwwrapper")
 	if err != nil {
@@ -31,7 +26,7 @@ func GetMBW() (string, string, error) {
 
 func ExecuteMBW(mbwPath string, args []string) error {
 	var cmd *exec.Cmd
-	if mbwPath == "mbw" || mbwPath == "sudo mbw" {
+	if mbwPath == "mbw" {
 		cmd = exec.Command("sh", "-c", fmt.Sprintf("%s %s", mbwPath, strings.Join(args, " ")))
 	} else {
 		cmd = exec.Command("sh", "-c", fmt.Sprintf("%s %s", mbwPath, strings.Join(args, " ")))

@@ -18,13 +18,7 @@ var binFiles embed.FS
 func GetMBW() (mbwCmd string, tempFile string, err error) {
 	var errors []string
 	if path, lookErr := exec.LookPath("mbw"); lookErr == nil {
-		output, runErr := exec.Command("sudo", path, "-h").CombinedOutput()
-		if strings.Contains(string(output), "Usage: mbw") {
-			return "sudo mbw", "", nil
-		} else {
-			errors = append(errors, fmt.Sprintf("sudo mbw 测试失败: %v\n输出: %s", runErr, string(output)))
-		}
-		output, runErr = exec.Command(path, "-h").CombinedOutput()
+		output, runErr := exec.Command(path, "-h").CombinedOutput()
 		if strings.Contains(string(output), "Usage: mbw") {
 			return "mbw", "", nil
 		} else {
@@ -44,13 +38,7 @@ func GetMBW() (mbwCmd string, tempFile string, err error) {
 		tempFile = filepath.Join(tempDir, binName)
 		writeErr := os.WriteFile(tempFile, fileContent, 0755)
 		if writeErr == nil {
-			output, runErr := exec.Command("sudo", tempFile, "-h").CombinedOutput()
-			if strings.Contains(string(output), "Usage: mbw") {
-				return fmt.Sprintf("sudo %s", tempFile), tempFile, nil
-			} else {
-				errors = append(errors, fmt.Sprintf("sudo %s 运行失败: %v\n输出: %s", tempFile, runErr, string(output)))
-			}
-			output, runErr = exec.Command(tempFile, "-h").CombinedOutput()
+			output, runErr := exec.Command(tempFile, "-h").CombinedOutput()
 			if strings.Contains(string(output), "Usage: mbw") {
 				return tempFile, tempFile, nil
 			} else {

@@ -12,11 +12,7 @@ import (
 
 func GetMBW() (mbwCmd string, tempFile string, err error) {
 	if path, err := exec.LookPath("mbw"); err == nil {
-		output, runErr := exec.Command("sudo", path, "-h").CombinedOutput()
-		if runErr == nil && strings.Contains(string(output), "Usage: mbw") {
-			return "sudo mbw", "", nil
-		}
-		output, runErr = exec.Command(path, "-h").CombinedOutput()
+		output, runErr := exec.Command(path, "-h").CombinedOutput()
 		if runErr == nil && strings.Contains(string(output), "Usage: mbw") {
 			return "mbw", "", nil
 		}
