@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 )
 
-// CleanDD 删除临时提取出的 coreutils/dd 文件
-func CleanDD(tempFile string) error {
+// CleanMBW 删除临时提取出的 mbw/mbw 文件
+func CleanMBW(tempFile string) error {
 	if tempFile == "" {
 		return nil // 不需要清理
 	}

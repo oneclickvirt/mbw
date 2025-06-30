@@ -10,17 +10,17 @@ import (
 	"strings"
 )
 
-// GetDD 获取与当前系统匹配的 dd 二进制文件并返回路径
-func GetDD() (string, string, error) {
+// GetMBW 获取与当前系统匹配的 mbw 二进制文件并返回路径
+func GetMBW() (string, string, error) {
 	binaryName := "mbw-darwin-arm64"
-	// 优先尝试 sudo dd 是否可用
+	// 优先尝试 sudo mbw 是否可用
 	if path, err := exec.LookPath("mbw"); err == nil {
-		testCmd := exec.Command("sudo", path, "--help")
+		testCmd := exec.Command("sudo", path, "-h")
 		if err := testCmd.Run(); err == nil {
-			return "sudo dd", "", nil
+			return "sudo mbw", "", nil
 		}
-		// 如果 sudo dd 不可用，则尝试直接使用 dd
-		testCmd = exec.Command(path, "--help")
+		// 如果 sudo mbw 不可用，则尝试直接使用 mbw
+		testCmd = exec.Command(path, "-h")
 		if err := testCmd.Run(); err == nil {
 			return "mbw", "", nil
 		}
@@ -30,19 +30,19 @@ func GetDD() (string, string, error) {
 	if err != nil {
 		return "", "", fmt.Errorf("创建临时目录失败: %v", err)
 	}
-	return "", "", fmt.Errorf("无法找到可用的 dd 命令")
+	return "", "", fmt.Errorf("无法找到可用的 mbw 命令")
 }
 
-// ExecuteDD 执行 dd 命令
-func ExecuteDD(ddPath string, args []string) error {
+// ExecuteMBW 执行 mbw 命令
+func ExecuteMBW(mbwPath string, args []string) error {
 	var cmd *exec.Cmd
-	if ddPath == "mbw" {
-		// 使用系统 dd
-		cmd = exec.Command(ddPath, args...)
+	if mbwPath == "mbw" {
+		// 使用系统 mbw
+		cmd = exec.Command(mbwPath, args...)
 	} else {
-		// 使用提取的 coreutils dd
-		ddCmd := fmt.Sprintf("%s dd %s", ddPath, strings.Join(args, " "))
-		cmd = exec.Command("sh", "-c", ddCmd)
+		// 使用提取的 mbw mbw
+		mbwCmd := fmt.Sprintf("%s mbw %s", mbwPath, strings.Join(args, " "))
+		cmd = exec.Command("sh", "-c", mbwCmd)
 	}
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout

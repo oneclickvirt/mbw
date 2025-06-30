@@ -280,7 +280,7 @@ jobs:
           # 测试二进制文件（仅在本地架构上）
           if [[ "${{ matrix.target }}" == "linux-amd64" && "${{ runner.os }}" == "Linux" ]] || [[ "${{ runner.os }}" == "macOS" ]]; then
             echo "Testing binary..."
-            "../bin/$OUTPUT_NAME" --version || "../bin/$OUTPUT_NAME" -h || true
+            "../bin/$OUTPUT_NAME" -h || "../bin/$OUTPUT_NAME" -h || true
           fi
           # 对于 Windows 二进制文件，显示依赖信息
           if [[ "${{ matrix.goos }}" == "windows" && -n "${{ matrix.strip }}" ]]; then
