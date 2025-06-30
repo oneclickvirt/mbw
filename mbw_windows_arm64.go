@@ -16,7 +16,7 @@ var binFiles embed.FS
 
 // GetMBW 获取与当前系统匹配的 mbw 二进制文件并返回路径
 func GetMBW() (string, string, error) {
-	binaryName := "mbw-windows-amd64.exe"
+	binaryName := "mbw-windows-arm64.exe"
 	// 检查系统是否有原生 mbw 命令
 	if _, err := exec.LookPath("mbw"); err == nil {
 		return "mbw", "", nil // 返回系统原生命令
