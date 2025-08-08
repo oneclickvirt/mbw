@@ -28,7 +28,7 @@ func GetMBW() (string, string, error) {
 	if err != nil {
 		return "", "", fmt.Errorf("创建临时目录失败: %v", err)
 	}
-	binPath := filepath.Join("bin", binaryName)
+	binPath := fmt.Sprintf("bin/%s", binaryName)
 	fileContent, err := binFiles.ReadFile(binPath)
 	if err != nil {
 		return "", "", fmt.Errorf("读取嵌入的 mbw 二进制文件失败: %v", err)
