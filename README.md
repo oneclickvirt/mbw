@@ -3,7 +3,7 @@
 一个嵌入mbw依赖的golang库 (A golang library with embedded mbw dependencies) 
 
 ```
-go get github.com/oneclickvirt/mbw@v0.0.1-20250808061222
+go get github.com/oneclickvirt/mbw@v0.0.2-20250924041746
 ```
 
 本程序仅可在类Unix系统中运行。
