@@ -5,3 +5,5 @@
 ```
 go get github.com/oneclickvirt/mbw@v0.0.1-20250808061222
 ```
+
+本程序仅可在类Unix系统中运行。

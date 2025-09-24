@@ -1,5 +1,5 @@
-//go:build !(linux || freebsd || darwin || openbsd || windows)
-// +build !linux,!freebsd,!darwin,!openbsd,!windows
+//go:build !(linux || freebsd || darwin || openbsd)
+// +build !linux,!freebsd,!darwin,!openbsd
 
 package mbw
 

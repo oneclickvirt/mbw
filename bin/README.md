@@ -27,11 +27,6 @@ mbw is a memory bandwidth benchmark tool that measures the bandwidth of memory s
 - `mbw-darwin-amd64` - macOS x86_64 (macOS 10.12+)
 - `mbw-darwin-arm64` - macOS ARM64 (Apple Silicon, macOS 11.0+)
 
-### Windows
-- `mbw-windows-amd64.exe` - Windows x86_64
-- `mbw-windows-386.exe` - Windows x86 (32-bit)
-- `mbw-windows-arm64.exe` - Windows ARM64
-
 ### BSD
 - `mbw-freebsd-amd64` - FreeBSD x86_64
 - `mbw-freebsd-arm64` - FreeBSD ARM64

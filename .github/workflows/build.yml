@@ -126,76 +126,6 @@ jobs:
             goarch: arm64
             cc: clang
             cflags: "-O2 -arch arm64 -mmacosx-version-min=11.0"
-
-          # Windows builds (使用 mingw-w64)
-          - os: ubuntu-latest
-            target: windows-amd64
-            goos: windows
-            goarch: amd64
-            cc: x86_64-w64-mingw32-gcc
-            cflags: "-O2 -static -static-libgcc -static-libstdc++"
-            packages: "gcc-mingw-w64-x86-64"
-            strip: x86_64-w64-mingw32-strip
-            ext: ".exe"
-          - os: ubuntu-latest
-            target: windows-386
-            goos: windows
-            goarch: 386
-            cc: i686-w64-mingw32-gcc
-            cflags: "-O2 -static -static-libgcc -static-libstdc++"
-            packages: "gcc-mingw-w64-i686"
-            strip: i686-w64-mingw32-strip
-            ext: ".exe"
-          # - os: ubuntu-latest
-          #   target: windows-arm64
-          #   goos: windows
-          #   goarch: arm64
-          #   cc: gcc-aarch64-linux-gnu
-          #   cflags: "-O2 -static -static-libgcc -static-libstdc++"
-          #   packages: "gcc-aarch64-linux-gnu"
-          #   strip: aarch64-w64-mingw32-strip
-          #   ext: ".exe"
-          
-          # # FreeBSD builds
-          # - os: ubuntu-latest
-          #   target: freebsd-amd64
-          #   goos: freebsd
-          #   goarch: amd64
-          #   cc: clang
-          #   cflags: "-target x86_64-unknown-freebsd -static"
-          #   packages: "clang lld"
-          # - os: ubuntu-latest
-          #   target: freebsd-arm64
-          #   goos: freebsd
-          #   goarch: arm64
-          #   cc: clang
-          #   cflags: "-target aarch64-unknown-freebsd -static"
-          #   packages: "clang lld"
-
-          # # OpenBSD builds
-          # - os: ubuntu-latest
-          #   target: openbsd-amd64
-          #   goos: openbsd
-          #   goarch: amd64
-          #   cc: clang
-          #   cflags: "-target x86_64-unknown-openbsd -static"
-          #   packages: "clang lld"
-          # - os: ubuntu-latest
-          #   target: openbsd-arm64
-          #   goos: openbsd
-          #   goarch: arm64
-          #   cc: clang
-          #   cflags: "-target aarch64-unknown-openbsd -static"
-          #   packages: "clang lld"
-            
-          # # NetBSD builds
-          # - os: ubuntu-latest
-          #   target: netbsd-amd64
-          #   goos: netbsd
-          #   goarch: amd64
-          #   cc: clang
-          #   cflags: "-target x86_64-unknown-netbsd -static"
-          #   packages: "clang lld"
             
       fail-fast: false
 
@@ -234,26 +164,10 @@ jobs:
           # 设置编译器和标志
           export CC="${{ matrix.cc }}"
           export CFLAGS="${{ matrix.cflags }}"
-          # 为 Windows 构建设置额外的环境变量
-          if [[ "${{ matrix.goos }}" == "windows" ]]; then
-            export LDFLAGS="-static -static-libgcc -static-libstdc++"
-          fi
           # 编译 mbw
           echo "Building mbw with CC=$CC and CFLAGS=$CFLAGS"
           make clean || true
-          # 对于 Windows，可能需要修改 Makefile 或使用不同的构建方法
-          if [[ "${{ matrix.goos }}" == "windows" ]]; then
-            # 检查是否有 Windows 特定的构建方法
-            if [ -f Makefile.win ]; then
-              make -f Makefile.win CC="$CC" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS"
-            else
-              # 使用标准 make，但可能需要调整
-              make CC="$CC" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" || \
-              $CC $CFLAGS mbw.c -o mbw.exe $LDFLAGS
-            fi
-          else
-            make CC="$CC" CFLAGS="$CFLAGS"
-          fi
+          make CC="$CC" CFLAGS="$CFLAGS"
           # 设置输出文件名
           if [[ -n "${{ matrix.goarm }}" ]]; then
             OUTPUT_NAME="mbw-${{ matrix.goos }}-${{ matrix.goarch }}v${{ matrix.goarm }}${{ matrix.ext }}"
@@ -261,11 +175,7 @@ jobs:
             OUTPUT_NAME="mbw-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}"
           fi
           # 复制二进制文件
-          if [[ "${{ matrix.goos }}" == "windows" ]]; then
-            cp mbw.exe "../bin/$OUTPUT_NAME" || cp mbw "../bin/$OUTPUT_NAME"
-          else
-            cp mbw "../bin/$OUTPUT_NAME"
-          fi
+          cp mbw "../bin/$OUTPUT_NAME"
           # Strip 二进制文件（如果有指定的 strip 工具）
           if [[ -n "${{ matrix.strip }}" ]]; then
             ${{ matrix.strip }} "../bin/$OUTPUT_NAME" || true
@@ -281,12 +191,6 @@ jobs:
           if [[ "${{ matrix.target }}" == "linux-amd64" && "${{ runner.os }}" == "Linux" ]] || [[ "${{ runner.os }}" == "macOS" ]]; then
             echo "Testing binary..."
             "../bin/$OUTPUT_NAME" -h || "../bin/$OUTPUT_NAME" -h || true
-          fi
-          # 对于 Windows 二进制文件，显示依赖信息
-          if [[ "${{ matrix.goos }}" == "windows" && -n "${{ matrix.strip }}" ]]; then
-            echo "Windows binary dependencies:"
-            ${{ matrix.cc }} -print-search-dirs || true
-            objdump -p "../bin/$OUTPUT_NAME" | grep "DLL Name" || true
           fi
         continue-on-error: true
 
