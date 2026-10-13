@@ -173,6 +173,7 @@ jobs:
         else
           OUTPUT_NAME="mbw-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}"
         fi
+        if [[ "${{ matrix.target }}" == "linux-amd64-compat" ]]; then OUTPUT_NAME="mbw-linux-amd64-compat"; fi
         # 复制二进制文件
         cp mbw "../bin/$OUTPUT_NAME"
         # Strip 二进制文件（如果有指定的 strip 工具）
@@ -191,18 +192,50 @@ jobs:
           echo "Testing binary..."
           "../bin/$OUTPUT_NAME" -h || "../bin/$OUTPUT_NAME" -h || true
         fi
-      continue-on-error: true
+    - name: Verify declared binary architecture
+      shell: bash
+      run: |
+        set -euo pipefail
+        file="bin/mbw-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goarm && 'v' }}${{ matrix.goarm }}${{ matrix.ext }}"
+        if [[ "${{ matrix.target }}" == "linux-amd64-compat" ]]; then file=bin/mbw-linux-amd64-compat; fi
+        [[ -f "$file" && -s "$file" ]] || { echo "Declared binary missing." >&2; exit 1; }
+        if [[ "${{ matrix.goos }}" == linux ]]; then
+          header=$(readelf -h "$file")
+          case "${{ matrix.goarch }}" in
+            amd64) machine='X86-64'; endian='little endian'; class=ELF64 ;;
+            386) machine='80386'; endian='little endian'; class=ELF32 ;;
+            arm64) machine='AArch64'; endian='little endian'; class=ELF64 ;;
+            arm) machine='ARM'; endian='little endian'; class=ELF32 ;;
+            riscv64) machine='RISC-V'; endian='little endian'; class=ELF64 ;;
+            mips64) machine='MIPS'; endian='big endian'; class=ELF64 ;;
+            mips64le) machine='MIPS'; endian='little endian'; class=ELF64 ;;
+            mips) machine='MIPS'; endian='big endian'; class=ELF32 ;;
+            mipsle) machine='MIPS'; endian='little endian'; class=ELF32 ;;
+            ppc64) machine='PowerPC64'; endian='big endian'; class=ELF64 ;;
+            ppc64le) machine='PowerPC64'; endian='little endian'; class=ELF64 ;;
+            *) exit 1 ;;
+          esac
+          grep -F "$machine" <<< "$header"
+          grep -F "$endian" <<< "$header"
+          grep -F "$class" <<< "$header"
+          readelf -l "$file" > binary-segments.txt
+          if grep -q INTERP binary-segments.txt; then echo "Binary retained a dynamic loader." >&2; exit 1; fi
+        elif [[ "${{ matrix.goos }}" == darwin ]]; then
+          arch="${{ matrix.goarch == 'amd64' && 'x86_64' || 'arm64' }}"
+          lipo -verify_arch "$arch" "$file"
+        fi
     - name: Upload binary artifact
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: mbw-${{ matrix.target }}
-        path: bin/mbw-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goarm && 'v' }}${{ matrix.goarm }}${{ matrix.ext }}
+        path: bin/mbw-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goarm && 'v' }}${{ matrix.goarm }}${{ matrix.ext
+          }}${{ matrix.target == 'linux-amd64-compat' && '-compat' || '' }}
         retention-days: 30
-      continue-on-error: true
+        if-no-files-found: error
   collect:
     needs: build
     runs-on: ubuntu-latest
-    if: always()
+    if: needs.build.result == 'success'
     steps:
     - name: Checkout current repository
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -319,6 +352,7 @@ jobs:
     - name: Commit binaries to current repository
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
       run: |
+        set -euo pipefail
         git config --global user.name "GitHub Actions Bot"
         git config --global user.email "actions@github.com"
         git add bin/
@@ -334,6 +368,12 @@ jobs:
           - Includes Windows ARM64/AMD64 and enhanced Linux compatibility builds"
           git push
         fi
-      continue-on-error: true
+
+        # Version only after every declared target passed; consumers discover this immutable timestamp tag.
+        new_tag="v0.0.1-$(date -u +%Y%m%d%H%M%S)"
+        git tag "$new_tag"
+        git push origin "refs/tags/$new_tag"
 'on':
   workflow_dispatch: null
+permissions:
+  contents: write
