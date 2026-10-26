@@ -1,0 +1,19 @@
+{
+  "repository": "oneclickvirt/mbw",
+  "branch": "main",
+  "skill_name": "oneclickvirt-mbw",
+  "purpose": "Use the Go library that embeds mbw memory-bandwidth dependencies.",
+  "notes": [
+    "Inspect exported APIs, platform support and memory allocation before running. Bound working-set size on shared hosts."
+  ],
+  "guide": "https://www.spiritlhl.net/guide/agent_integrations.html",
+  "releases": false,
+  "mcp": false,
+  "source_files": [
+    "go.mod"
+  ],
+  "purpose_zh": "在有内存用量限制的测试中使用内嵌 mbw 的 Go 库。",
+  "notes_zh": [
+    "先检查导出接口、平台支持及内存分配，在共享主机限制工作集。"
+  ]
+}

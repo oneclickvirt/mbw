@@ -1,0 +1,10 @@
+{
+  "repository": "oneclickvirt/mbw",
+  "skill_name": "oneclickvirt-mbw",
+  "mcp": false,
+  "files": {
+    "agent/profile.json": "7038e5c43fc81feeb9a2bbd00510a020747325bb9ed5c05340143044c1c6a870",
+    "skills/oneclickvirt-mbw/SKILL.md": "cee96e0e3fcda480745b6413b5ec3dd7321bbd01c52710ae2a5d1b57d0a789f6",
+    "skills/oneclickvirt-mbw/SKILL_ZH.md": "7e9b28f71006239c5cc387381d6e41de15ec1c5e2ae7ef2083091f5f2bf30e68"
+  }
+}
